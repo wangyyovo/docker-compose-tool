@@ -1,0 +1,54 @@
+# https://github.com/cookieY/Yearning/tree/next/docker
+#  用户名: admin  密码:Yearning_admin
+version: '3'
+
+networks:
+  yearning:
+    driver: bridge
+
+services:
+  mysql:
+    image: mysql:5.7  # 原镜像`mysql:5.7`
+    container_name: yearning-mysql       # 容器名为'mysql'
+    restart: unless-stopped          # 指定容器退出后的重启策略为始终重启，但是不考虑在Docker守护进程启动时就已经停止了的容器
+    volumes:                         # 数据卷挂载路径设置,将本机目录映射到容器目录
+      #- "./yearning/mysql/my.cnf:/etc/mysql/my.cnf"
+      - "./yearning/mysql/data:/var/lib/mysql"
+      - "./yearning/mysql/conf.d:/etc/mysql/conf.d"
+      # - /data/docker/var/run/mysql-3306.sock:/var/run/mysql.sock
+    environment:                        # 设置环境变量,相当于docker run命令中的-e
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+      MYSQL_ROOT_PASSWORD: 123456         # 设置root用户密码
+      MYSQL_USER: yearning
+      MYSQL_PASSWORD: 123456
+      MYSQL_DATABASE: yearning          # 初始化的数据库名称
+      
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:                              # 映射端口
+      - "3306:3306"
+    networks:
+      - yearning
+
+  yearning:
+    image: chaiyd/yearning:latest     # 原镜像`chaiyd/yearning:latest`
+    container_name: yearning                                        # 容器名为'yearning'
+    restart: unless-stopped                                                 # 指定容器退出后的重启策略为始终重启，但是不考虑在Docker守护进程启动时就已经停止了的容器
+    #privileged: true
+    environment:                        # 设置环境变量,相当于docker run命令中的-e
+      MYSQL_ADDR: mysql        # TODO mysql连接地址
+      MYSQL_USER: root                             # 账号
+      MYSQL_PASSWORD: 123456                         # 密码
+      MYSQL_DB: yearning                           # Yearning数据库
+      IS_DOCKER: is_docker
+    ports:                              # 映射端口
+      - "8000:8000"
+    #command: /bin/bash -c "./Yearning install"  # 首次使用请先初始化
+    #command: /bin/bash -c "./Yearning migrate" # 升级使用
+    #command: /bin/bash -c "./Yearning reset_super" # 重置admin密码
+    networks:
+      - yearning
+    depends_on:                         # 解决容器依赖启动先后问题
+      - mysql

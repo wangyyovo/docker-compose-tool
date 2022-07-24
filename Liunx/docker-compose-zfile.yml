@@ -1,0 +1,15 @@
+# https://github.com/zhaojun1998/zfile
+# https://hub.docker.com/r/stilleshan/zfile
+version: '3.3'
+services:
+  zfile:
+    image: stilleshan/zfile
+    container_name: zfile
+    restart: always
+    ports:
+      - '8080:8080'
+    volumes:
+      - './zfile/db:/root/.zfile-v4/db'
+      - './zfile/logs:/root/.zfile-v4/logs'
+      - './zfile/file:/root/file' # 文件存放的位置
+

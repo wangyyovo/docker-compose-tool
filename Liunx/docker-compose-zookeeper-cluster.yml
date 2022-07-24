@@ -1,0 +1,66 @@
+version: '3.7'
+
+services:
+  zoo1:
+    image: zookeeper:3.8.0
+    restart: always
+    hostname: zoo1
+    container_name: zookeeper-cluster-1
+    ports:
+      - 12181:2181
+      - 18080:8080
+    volumes:
+      - "./zookeeper/zookeeper-1/data:/data"
+      - "./zookeeper/zookeeper-1/datalog:/datalog"
+      - "./zookeeper/zookeeper-1/logs:/logs"
+    environment:
+      ZOO_MY_ID: 1
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: "*" 
+    networks:
+      - zookeeper
+
+  zoo2:
+    image: zookeeper:3.8.0
+    restart: always
+    hostname: zoo2
+    container_name: zookeeper-cluster-2
+    ports:
+      - 22181:2181
+      - 28080:8080
+    volumes:
+      - "./zookeeper/zookeeper-2/data:/data"
+      - "./zookeeper/zookeeper-2/datalog:/datalog"
+      - "./zookeeper/zookeeper-2/logs:/logs"
+    environment:
+      ZOO_MY_ID: 2
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: "*"
+    networks:
+      - zookeeper
+
+  zoo3:
+    image: zookeeper:3.8.0
+    restart: always
+    hostname: zoo3
+    container_name: zookeeper-cluster-3
+    ports:
+      - 32181:2181
+      - 38080:8080
+    volumes:
+      - "./zookeeper/zookeeper-3/data:/data"
+      - "./zookeeper/zookeeper-3/datalog:/datalog"
+      - "./zookeeper/zookeeper-3/logs:/logs"
+    environment:
+      ZOO_MY_ID: 3
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: "*"
+    networks:
+      - zookeeper
+networks:
+  zookeeper:
+    driver: bridge
+

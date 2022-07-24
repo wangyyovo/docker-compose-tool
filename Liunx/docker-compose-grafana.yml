@@ -1,0 +1,51 @@
+# admin / admin 
+# http://192.168.0.110:3000/login
+version: "3.9"
+
+services:
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2.2.0-alpine
+    volumes:
+      - influxdb-lib:/var/lib/influxdb2
+    env_file:
+      # BE SURE TO CHANGE THIS LINE BEFORE GOING TO PRODUCTION
+      - ./grafana/influx2.env
+    ports:
+      - 8086:8086
+    restart: always
+    privileged: true
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana-oss:9.0.3
+    volumes:
+      - ./grafana/grafana/etc:/etc/grafana:ro
+      - grafana-lib:/var/lib/grafana
+      - grafana-log:/var/log/grafana
+      - grafana-home:/usr/share/grafana
+    links:
+      - influxdb:influxdb
+    env_file:
+      # BE SURE TO CHANGE THIS LINE BEFORE GOING TO PRODUCTION
+      - ./grafana/grafana.env
+    ports:
+      - 3000:3000
+    depends_on:
+      - influxdb
+    restart: always
+    privileged: true
+
+volumes:
+  influxdb-lib:
+    external: false
+
+  grafana-lib:
+    external: false
+
+  grafana-log:
+    external: false
+    
+  grafana-home:
+    external: false
+

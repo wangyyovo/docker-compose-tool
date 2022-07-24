@@ -1,0 +1,28 @@
+version: '3'
+services:
+  zookeeper:
+    image: zookeeper:3.7.0
+    container_name: zookeeper
+    restart: unless-stopped
+    volumes:
+      - "./zookeeper/data:/data"
+      - "./zookeeper/datalog:/datalog"
+    ports:
+      - "2181:2181"
+    privileged: true
+
+  # 可视化界面
+  zookeeper-webui:
+    image: tobilg/zookeeper-webui
+    container_name: zookeeper-webui
+    restart: unless-stopped
+    environment:
+      ZK_DEFAULT_NODE: zookeeper:2181
+      USER: admin
+      PASSWORD: admin
+    depends_on:
+      - zookeeper
+    links:
+      - zookeeper
+    ports:
+      - "8080:8080"

@@ -1,0 +1,46 @@
+version: '3'
+services:
+  mysql5:
+    image: mysql:5.7.38  # 原镜像`mysql:5.7`
+    container_name: mysql5        # 容器名为'mysql5'
+    restart: unless-stopped       # 指定容器退出后的重启策略为始终重启，但是不考虑在Docker守护进程启动时就已经停止了的容器
+    volumes:                      # 数据卷挂载路径设置,将本机目录映射到容器目录
+      - "./mysql5.7/my.cnf:/etc/mysql/my.cnf"
+      - "./mysql5.7/data:/var/lib/mysql"
+      - "./mysql5.7/conf.d:/etc/mysql/conf.d"
+      - "./mysql5.7/log/mysql:/var/log/mysql"
+      # 初始化执行的sql
+      # - ./mysql5.7/init:/docker-entrypoint-initdb.d/
+    environment:                        # 设置环境变量,相当于docker run命令中的-e
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+      MYSQL_ROOT_PASSWORD: 123456  	# 设置root用户密码
+      MYSQL_DATABASE: demo   		# 初始化的数据库名称
+      MYSQL_USER: wyy 			# 添加新用户
+      MYSQL_PASSWORD: 123456
+    ports:                       	# 映射端口
+      - "3306:3306"
+     
+     
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - "80:80"
+    environment:
+      - MAX_EXECUTION_TIME=600 
+      - UPLOAD_LIMIT=800M
+      - PMA_HOST=mysql5
+      - PMA_PORT=3306
+      - PMA_ARBITRARY=1
+      - MYSQL_USER="wyy"
+      - MYSQL_PASSWORD="123456"
+      - MYSQL_ROOT_PASSWORD="123456"
+    depends_on:
+      - mysql5
+    networks:
+      - mysql_bridge
+      
+# docker network create mysql_bridge
+networks:
+  mysql_bridge:
+    driver: bridge

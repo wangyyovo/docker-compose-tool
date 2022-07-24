@@ -1,0 +1,67 @@
+# http://t.zoukankan.com/dszazhy-p-15017259.html
+# 启动容器后会报错，将gitlab-runner关联到gitlab就不会报错了
+# docker exec -it gitlab-runner gitlab-runner register
+# docker exec -it gitlab bash
+# cat /etc/gitlab/initial_root_password
+# 账号:root 密码:进入gitlab容器中获取
+# gitlab->setting->CI/CD->Runner 获取token
+
+version: '3'
+networks:
+  # bridge：默认，需要单独配置ports映射主机port和服务的port，并且开启了容器间通信
+  gitlab:
+    driver: bridge
+
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ce:latest' # gitlab的镜像，如果已经有了，指定自己的镜像版本即可
+    container_name: gitlab # 生成的docker容器的名字
+    restart: always
+    networks:
+      - gitlab
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://192.168.0.110:8993' # 此处填写所在服务器ip若有域名可以写域名
+        gitlab_rails['gitlab_shell_ssh_port'] = 2224
+        gitlab_rails['time_zone'] = 'Asia/Shanghai'
+        # email setting
+        #gitlab_rails['smtp_enable'] = true
+        #gitlab_rails['smtp_address'] = "smtp.gmail.com"
+        #gitlab_rails['smtp_port'] = 587
+        #gitlab_rails['smtp_user_name'] = "my.email@gmail.com"
+        #gitlab_rails['smtp_password'] = "my-gmail-password"
+        #gitlab_rails['smtp_domain'] = "smtp.gmail.com"
+        #gitlab_rails['smtp_authentication'] = "login"
+        #gitlab_rails['smtp_enable_starttls_auto'] = true
+        #gitlab_rails['smtp_tls'] = false
+        #gitlab_rails['smtp_openssl_verify_mode'] = 'peer'
+    ports:
+      - '8993:8993' # 此处端口号须与 external_url 中保持一致，左边和右边都要一样
+      - '2224:22' # 这里的2224和上面的2224一致，但是右边必须是22，不能是其他
+      #- '10443:443'
+    volumes:
+      #将相关配置映射到当前目录下的config目录
+      - './gitlab/config:/etc/gitlab'
+      #将日志映射到当前目录下的logs目录
+      - './gitlab/logs:/var/log/gitlab'
+      #将数据映射到当前目录下的data目录
+      - './gitlab/data:/var/opt/gitlab'
+
+  gitlab-runner:
+    image: 'gitlab/gitlab-runner:alpine'
+    restart: unless-stopped
+    container_name: 'gitlab-runner'
+    depends_on:
+      - gitlab
+    privileged: true
+    networks:
+      - gitlab
+    volumes:
+      - ./gitlab/gitlab-runner/config:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+      
+      
+      
+      
+      
+     
